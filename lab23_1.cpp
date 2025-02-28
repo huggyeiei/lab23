@@ -3,6 +3,7 @@
 #include<vector>
 #include<string>
 #include<cstdlib>
+#include<sstream>
 
 using namespace std;
 
@@ -11,31 +12,73 @@ char score2grade(int score){
     if(score >= 70) return 'B';
     if(score >= 60) return 'C';
     if(score >= 50) return 'D';
-    else return 'F';
+    return 'F';
 }
 
 string toUpperStr(string x){
     string y = x;
-    for(unsigned i = 0; i < x.size();i++) y[i] = toupper(x[i]);
+    for(unsigned i = 0; i < x.size(); i++) y[i] = toupper(x[i]);
     return y;
 }
 
-void importDataFromFile(){
-
+void importDataFromFile(string filename, vector<string> &names, vector<int> &scores, vector<char> &grades){
+    ifstream file(filename);
+    if(!file) {
+        cerr << "Error: Cannot open file." << endl;
+        return;
+    }
+    string line;
+    while(getline(file, line)){
+        stringstream ss(line);
+        string name, temp;
+        int score1, score2, score3;
+        getline(ss, name, ':');
+        ss >> score1 >> score2 >> score3;
+        names.push_back(name);
+        int total = score1 + score2 + score3;
+        scores.push_back(total);
+        grades.push_back(score2grade(total));
+    }
+    file.close();
 }
 
-void getCommand(){
-
+void getCommand(string &command, string &key){
+    cout << "Please input your command: \n";
+    string input;
+    getline(cin, input);
+    stringstream ss(input);
+    ss >> command;
+    getline(ss, key);
+    if(key.size() > 0 && key[0] == ' ') key = key.substr(1);
 }
 
-void searchName(){
-
+void searchName(const vector<string> &names, const vector<int> &scores, const vector<char> &grades, string key){
+    bool found = false;
+    cout << "---------------------------------\n";
+    for(size_t i = 0; i < names.size(); i++){
+        if(toUpperStr(names[i]) == key){
+            cout << names[i] << "'s score = " << scores[i] << "\n";
+            cout << names[i] << "'s grade = " << grades[i] << "\n";
+            found = true;
+            break;
+        }
+    }
+    if(!found) cout << "Cannot found.\n";
+    cout << "---------------------------------\n";
 }
 
-void searchGrade(){
-
+void searchGrade(const vector<string> &names, const vector<int> &scores, const vector<char> &grades, string key){
+    bool found = false;
+    cout << "---------------------------------\n";
+    for(size_t i = 0; i < grades.size(); i++){
+        if(grades[i] == key[0]){
+            cout << names[i] << " (" << scores[i] << ")\n";
+            found = true;
+        }
+    }
+    if(!found) cout << "Cannot found.\n";
+    cout << "---------------------------------\n";
 }
-
 
 int main(){
     string filename = "name_score.txt";
@@ -46,7 +89,7 @@ int main(){
     
     do{
         string command, key;
-        getCommand(command,key);
+        getCommand(command, key);
         command = toUpperStr(command);
         key = toUpperStr(key);
         if(command == "EXIT") break;
@@ -57,7 +100,7 @@ int main(){
             cout << "Invalid command.\n";
             cout << "---------------------------------\n";
         }
-    }while(true);
+    } while(true);
     
     return 0;
 }
